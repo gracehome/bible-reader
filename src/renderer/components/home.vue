@@ -25,27 +25,11 @@
               </el-card>
             </el-col>
           </router-link>
-          <a href="">
-            <el-col :span="6" class="menu-item">
-              <el-card shadow="hover">
-                书籍阅读
-              </el-card>
-            </el-col>
-          </a>
-          <a href="">
-            <el-col :span="6" class="menu-item">
-              <el-card shadow="hover">
-                读书笔记
-              </el-card>
-            </el-col>
-          </a>
-          <a href="">
-            <el-col :span="6" class="menu-item">
-              <el-card shadow="hover">
-                在线交流
-              </el-card>
-            </el-col>
-          </a>
+          <el-col :span="6" class="menu-item">
+            <el-card shadow="hover">
+              笔记收藏
+            </el-card>
+          </el-col>
         </el-row>
       </el-main>
     </el-container>
