@@ -47,6 +47,11 @@ app.on('activate', () => {
   }
 });
 
+ipcMain.on('relaunch', () => {
+  app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
+  app.exit(0);
+});
+
 
 ipcMain.on('chapter-read', (event, data) => {
   const verses = db.get('verses').filter({
@@ -70,18 +75,26 @@ ipcMain.on('load-bible', (event) => {
     ],
     properties: ['openFile'],
   }, (files) => {
-    let loadedBible = true;
     const STORE_PATH = app.getPath('userData');
     if (files) {
       const data = JSON.parse(fs.readFileSync(files[0]));
       if (!data || !data.verses) {
-        loadedBible = false;
+        event.sender.send('loaded-bible', false);
+        return;
       }
-      if (loadedBible) {
-        fs.createReadStream(files[0]).pipe(fs.createWriteStream(path.join(STORE_PATH, 'bible.json')));
-      }
+
+      fs.createReadStream(files[0])
+        .pipe(fs.createWriteStream(path.join(STORE_PATH, 'bible.json')))
+        .on('finish', (err) => {
+          if (err) {
+            event.sender.send('loaded-bible', false);
+            return;
+          }
+          event.sender.send('loaded-bible', true);
+        });
+      return;
     }
-    event.sender.send('loaded-bible', loadedBible);
+    event.sender.send('loaded-bible', false);
   });
 });
 

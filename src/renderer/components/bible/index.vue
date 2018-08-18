@@ -50,9 +50,22 @@
       });
 
       this.$electron.ipcRenderer.on('loaded-bible', (event, loaded) => {
+        const h = this.$createElement;
         if (loaded) {
           this.hasBible = true;
+
+          this.$notify({
+            title: '导入成功',
+            message: h('i', { style: 'color: teal' }, '导入成功，重启本应用'),
+          });
+
+          this.$electron.ipcRenderer.send('relaunch');
+          return;
         }
+        this.$notify({
+          title: '导入失败',
+          message: h('i', { style: 'color: red' }, '导入失败，请重新导入'),
+        });
       });
 
       this.oldBooks = this.$store.getters.category('old');
