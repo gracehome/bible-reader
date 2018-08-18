@@ -2,6 +2,11 @@
 
 > 圣经阅读器
 
+![圣经阅读器](./public/bible-1.png)
+![圣经阅读器](./public/bible-2.png)
+![圣经阅读器](./public/bible-3.png)
+
+
 #### Build Setup
 
 ``` bash
@@ -34,5 +39,6 @@ npm run lint
 2. 网络下载请求，所以需要联网
 3. 复制 bible.json到 AppData/Roming/bible目录下 
 ---
+
 
 This project was generated with [electron-vue](https://github.com/SimulatedGREG/electron-vue)@[4c6ee7b](https://github.com/SimulatedGREG/electron-vue/tree/4c6ee7bf4f9b4aa647a22ec1c1ca29c2e59c3645) using [vue-cli](https://github.com/vuejs/vue-cli). Documentation about the original structure can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/index.html).
