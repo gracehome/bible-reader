@@ -15,7 +15,7 @@
               <i class="el-icon-document"></i>
               <span>{{book.name_cn}}</span>
             </template>            
-            <el-menu-item v-for="chapter in book.chapters" :index="book.id +'-item-' + chapter"  :key="book.id + '-item-' + chapter" :route="{name: 'reader', params: {abbr_en: book.abbr_en},query: {chapter: chapter}}">{{chapter}}章, {{book.abbr_en}}</el-menu-item>
+            <el-menu-item v-for="chapter in book.chapters" :index="book.id +'-item-' + chapter"  :key="book.id + '-item-' + chapter" :route="{name: 'reader', params: {abbr_en: book.abbr_en},query: {chapter: chapter}}">{{chapter}}章</el-menu-item>
           </el-submenu>
         </el-menu>
       </el-col>
