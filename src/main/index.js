@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow , remote, dialog} from 'electron' // eslint-disable-line
+import { app, ipcMain, BrowserWindow , remote, dialog, screen, Tray, Menu} from 'electron' // eslint-disable-line
 const datastore = require('../datastore');
 const db = datastore(app, remote);
 const fs = require('fs');
@@ -12,18 +12,21 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 let mainWindow;
+let tray;
 const winURL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:9080'
   : `file://${__dirname}/index.html`;
 
+
 function createWindow() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   /**
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    height: 563,
+    height,
     useContentSize: true,
-    width: 1000,
+    width,
   });
 
   mainWindow.loadURL(winURL);
@@ -33,7 +36,45 @@ function createWindow() {
   });
 }
 
-app.on('ready', createWindow);
+const isSecondInstance = app.makeSingleInstance(() => {
+  // Someone tried to run a second instance, we should focus our window.
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  }
+  return true;
+});
+
+if (isSecondInstance) {
+  app.quit();
+}
+
+
+app.on('ready', () => {
+  createWindow();
+  tray = new Tray('build/icons/bible.png');
+  const contextMenu = Menu.buildFromTemplate([
+    { label: '退出', type: 'normal', role: 'quit' },
+  ]);
+  tray.setToolTip('圣经阅读');
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    const visible = mainWindow.isVisible();
+    if (visible) {
+      mainWindow.hide();
+    } else {
+      mainWindow.show();
+    }
+  });
+  mainWindow.on('show', () => {
+    tray.setHighlightMode('always');
+  });
+  mainWindow.on('hide', () => {
+    tray.setHighlightMode('never');
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
