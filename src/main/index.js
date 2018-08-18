@@ -1,6 +1,8 @@
-import { app, ipcMain, BrowserWindow , remote} from 'electron' // eslint-disable-line
+import { app, ipcMain, BrowserWindow , remote, dialog} from 'electron' // eslint-disable-line
 const datastore = require('../datastore');
 const db = datastore(app, remote);
+const fs = require('fs');
+const path = require('path');
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -55,6 +57,33 @@ ipcMain.on('chapter-read', (event, data) => {
   event.sender.send('chapter-read-reply', verses);
 });
 
+ipcMain.on('has-bible', (event) => {
+  const hasBible = db.get('verses').filter({ id: 1 }).value().length === 1;
+  event.sender.send('has-bible-reply', hasBible);
+});
+
+
+ipcMain.on('load-bible', (event) => {
+  dialog.showOpenDialog({
+    filters: [
+      { name: 'JSON文件', extensions: ['json'] },
+    ],
+    properties: ['openFile'],
+  }, (files) => {
+    let loadedBible = true;
+    const STORE_PATH = app.getPath('userData');
+    if (files) {
+      const data = JSON.parse(fs.readFileSync(files[0]));
+      if (!data || !data.verses) {
+        loadedBible = false;
+      }
+      if (loadedBible) {
+        fs.createReadStream(files[0]).pipe(fs.createWriteStream(path.join(STORE_PATH, 'bible.json')));
+      }
+    }
+    event.sender.send('loaded-bible', loadedBible);
+  });
+});
 
 /**
  * Auto Updater
