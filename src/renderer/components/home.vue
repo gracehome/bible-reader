@@ -1,6 +1,6 @@
 <template>
   <div id="home">
-    <el-container class="container">
+    <el-container class="container"  v-loading="loading"  element-loading-text="正在下载圣经数据">
       <el-aside width="200px" class="side">
         <el-row>
           <el-col :span="24" class="logo">
@@ -17,7 +17,7 @@
           <el-alert title="今日经文" type="success" :closable="false" :description="scripture">
           </el-alert>
         </el-row>
-        <el-row class="menu" :gutter="20">
+        <el-row class="menu" :gutter="20" v-show="hasBible">
           <router-link :to="{name: 'bibleIndex', params: {name_cn: '创'}}">
             <el-col :span="6" class="menu-item bg-blue">
               <el-card shadow="hover">
@@ -41,7 +41,50 @@
     data() {
       return {
         scripture: '不从恶人的计谋、不站罪人的道路、不坐亵慢人的座位、惟喜爱耶和华的律法、昼夜思想、这人便为有福。 --诗篇1:1-2',
+        loading: true,
+        hasBible: true,
       };
+    },
+    created() {
+      this.$electron.ipcRenderer.send('check-bible');
+
+      this.$electron.ipcRenderer.on('check-bible-reply', (event, exists) => {
+        if (!exists) {
+          this.hasBible = false;
+          this.loading = true;
+          if (!navigator.onLine) {
+            setTimeout(() => {
+              this.loading = false;
+              this.notify('当前未联网', '请检查您的网络');
+            }, 3000);
+            return;
+          }
+
+          this.$electron.ipcRenderer.send('download-bible');
+          return;
+        }
+        this.loading = false;
+      });
+
+      this.$electron.ipcRenderer.on('download-bible-reply', (event, downloaded) => {
+        this.loading = false;
+        if (!downloaded) {
+          this.hasBible = false;
+          this.notify('下载数据失败', '下载出现错误, ');
+          return;
+        }
+        this.hasBible = true;
+        this.notify('下载数据成功', '请浏览您的圣经');
+      });
+    },
+    methods: {
+      notify(title, message) {
+        const h = this.$createElement;
+        this.$notify({
+          title,
+          message: h('i', { style: 'color: teal' }, message),
+        });
+      },
     },
   };
 </script>

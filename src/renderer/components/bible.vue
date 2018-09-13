@@ -25,7 +25,11 @@
       };
     },
     created() {
-      this.books = this.$store.getters.books;
+      this.$electron.ipcRenderer.send('get-books', this.$store.state.bible.location.version);
+      this.$electron.ipcRenderer.on('get-books-reply', (event, items) => {
+        this.books = items;
+        this.$store.commit('setbooks', items);
+      });
     },
   };
 

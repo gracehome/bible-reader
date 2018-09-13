@@ -1,8 +1,45 @@
 import { app, ipcMain, BrowserWindow , remote, dialog, screen, Tray, Menu} from 'electron' // eslint-disable-line
-const datastore = require('../datastore');
-const db = datastore(app, remote);
+
+const { download } = require('electron-dl');
+
+const { Book, Verse } = require('../db');
 const fs = require('fs');
 const path = require('path');
+const config = require('../config');
+const crypto = require('crypto');
+
+const STORE_PATH = app.getPath('userData');
+
+const bible_url = 'https://raw.githubusercontent.com/gracehome/bible-reader/master/data/bible.sqlite';
+
+// 判断下载文件的完整性
+function compareHash(cb) {
+  let hash;
+  const md5sum = crypto.createHash('md5');
+  const stream = fs.createReadStream(path.join(STORE_PATH, 'bible.sqlite'));
+  stream.on('data', (chunk) => {
+    md5sum.update(chunk);
+  });
+  stream.on('end', () => {
+    hash = md5sum.digest('hex').toUpperCase();
+    cb(hash === config.hash);
+  });
+
+  stream.on('error', () => {
+    cb(false);
+  });
+}
+
+function downloadBible() {
+  if (!fs.existsSync(path.join(STORE_PATH, 'bible.sqlite'))) {
+    return download(BrowserWindow.getFocusedWindow(), bible_url, {
+      directory: STORE_PATH,
+      filename: 'bible.sqlite',
+    });
+  }
+  return Promise.resolve(true);
+}
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -36,23 +73,8 @@ function createWindow() {
   });
 }
 
-const isSecondInstance = app.makeSingleInstance(() => {
-  // Someone tried to run a second instance, we should focus our window.
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.show();
-    mainWindow.focus();
-  }
-  return true;
-});
-
-if (isSecondInstance) {
-  app.quit();
-}
-
-
-app.on('ready', () => {
-  createWindow();
+// 创建仪表盘
+function createTray() {
   tray = new Tray('build/icons/bible.png');
   const contextMenu = Menu.buildFromTemplate([
     { label: '退出', type: 'normal', role: 'quit' },
@@ -74,6 +96,27 @@ app.on('ready', () => {
   mainWindow.on('hide', () => {
     tray.setHighlightMode('never');
   });
+}
+
+// 存在一个实例处理
+const isSecondInstance = app.makeSingleInstance(() => {
+  // Someone tried to run a second instance, we should focus our window.
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  }
+  return true;
+});
+
+if (isSecondInstance) {
+  app.quit();
+}
+
+
+app.on('ready', () => {
+  createWindow();
+  createTray();
 });
 
 app.on('window-all-closed', () => {
@@ -88,73 +131,54 @@ app.on('activate', () => {
   }
 });
 
+// 重启
 ipcMain.on('relaunch', () => {
   app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
   app.exit(0);
 });
 
-
-ipcMain.on('chapter-read', (event, data) => {
-  const verses = db.get('verses').filter({
-    abbr_en: data.abbr_en || 'Gen',
-    chapter: data.chapter || 1,
-  }).value();
-
-  event.sender.send('chapter-read-reply', verses);
-});
-
-ipcMain.on('has-bible', (event) => {
-  const hasBible = db.get('verses').filter({ id: 1 }).value().length === 1;
-  event.sender.send('has-bible-reply', hasBible);
-});
-
-
-ipcMain.on('load-bible', (event) => {
-  dialog.showOpenDialog({
-    filters: [
-      { name: 'JSON文件', extensions: ['json'] },
-    ],
-    properties: ['openFile'],
-  }, (files) => {
-    const STORE_PATH = app.getPath('userData');
-    if (files) {
-      const data = JSON.parse(fs.readFileSync(files[0]));
-      if (!data || !data.verses) {
-        event.sender.send('loaded-bible', false);
+// 检查是否有数据文件，以及验证数据文件完整性
+ipcMain.on('check-bible', (event) => {
+  const exists = fs.existsSync(path.join(STORE_PATH, 'bible.sqlite'));
+  if (exists) {
+    compareHash((completed) => {
+      if (!completed) {
+        fs.unlinkSync(path.join(STORE_PATH, 'bible.sqlite'));
+        event.sender.send('check-bible-reply', false);
         return;
       }
+      event.sender.send('check-bible-reply', true);
+    });
+    return;
+  }
+  event.sender.send('check-bible-reply', false);
+});
 
-      fs.createReadStream(files[0])
-        .pipe(fs.createWriteStream(path.join(STORE_PATH, 'bible.json')))
-        .on('finish', (err) => {
-          if (err) {
-            event.sender.send('loaded-bible', false);
-            return;
-          }
-          event.sender.send('loaded-bible', true);
-        });
-      return;
-    }
-    event.sender.send('loaded-bible', false);
+// 下载圣经
+ipcMain.on('download-bible', (event) => {
+  downloadBible().then(() => {
+    compareHash((completed) => {
+      if (!completed) {
+        fs.unlinkSync(path.join(STORE_PATH, 'bible.sqlite'));
+      }
+      event.sender.send('download-bible-reply', completed);
+    });
+  }).catch(() => {
+    event.sender.send('download-bible-reply', false);
   });
 });
 
-/**
- * Auto Updater
- *
- * Uncomment the following code below and install `electron-updater` to
- * support auto updating. Code Signing with a valid certificate is required.
- * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-electron-builder.html#auto-updating
- */
+// 获取圣经目录
+ipcMain.on('get-books', (event, version) => {
+  Book.findAll({ where: { version }, raw: true }).then((books) => {
+    event.sender.send('get-books-reply', books);
+  }).catch(() => {
+    event.sender.send('get-books-reply', []);
+  });
+});
 
-/*
-import { autoUpdater } from 'electron-updater'
-
-autoUpdater.on('update-downloaded', () => {
-  autoUpdater.quitAndInstall()
-})
-
-app.on('ready', () => {
-  if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
-})
- */
+ipcMain.on('chapter-read', (event, arg) => {
+  Verse.findAll({ where: arg, raw: true }).then((verses) => {
+    event.sender.send('chapter-read-reply', verses);
+  }).catch(() => event.sender.send('chapter-read-reply', []));
+});

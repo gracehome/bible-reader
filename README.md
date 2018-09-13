@@ -29,9 +29,14 @@ npm run lint
 ```
 
 ### 数据库问题
-使用了`lowdb`作为数据库存储，遇到初始化数据的坑
+使用了`sqlite`作为数据库存储，遇到初始化数据的坑, 故采用联网下载数据文件
 
-采用了引入 `bible.json`文件解决
+`data` 文件包含 `bible.sqlite`文件，同时上传 `md5.txt` 作为校验，本程序需要将 md5 的 hash 值写入 `src/config` 中，比较麻烦，你可以自己修改为其他方式。
 
 
-This project was generated with [electron-vue](https://github.com/SimulatedGREG/electron-vue)@[4c6ee7b](https://github.com/SimulatedGREG/electron-vue/tree/4c6ee7bf4f9b4aa647a22ec1c1ca29c2e59c3645) using [vue-cli](https://github.com/vuejs/vue-cli). Documentation about the original structure can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/index.html).
+### sqlite 包的问题
+```
+1. npm install electron-rebuild
+2. ./node_modules/.bin/electron-rebuild -f -w sqlite
+```
+注意： 请使用 npm 安装 sqlite , 使用 cnpm 报错，如何解决还没有查考
