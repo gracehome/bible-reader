@@ -1,12 +1,23 @@
 <template>
   <div class="bible-reader">
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ name: 'home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ name: 'bible' }">目录</el-breadcrumb-item>
-      <el-breadcrumb-item>{{book.name_cn}}</el-breadcrumb-item>
-      <el-breadcrumb-item>第{{chapter}}章</el-breadcrumb-item>
-    </el-breadcrumb>
-    <p>{{book.name_cn}}</p>
+    <el-row v-if="language=='cn'">
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item :to="{ name: 'home' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ name: 'bibleIndex' , params: {version: 1}, query: {language: language}}">目录</el-breadcrumb-item>
+        <el-breadcrumb-item>{{book.name_cn}}</el-breadcrumb-item>
+        <el-breadcrumb-item>第{{chapter}}章</el-breadcrumb-item>
+      </el-breadcrumb>
+      <p>{{book.name_cn}}</p>
+    </el-row>
+    <el-row v-else>
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item :to="{ name: 'home' }">Home</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ name: 'bibleIndex', params: {version: 2}, query: {language: language} }">Index</el-breadcrumb-item>
+        <el-breadcrumb-item>{{book.name_en}}</el-breadcrumb-item>
+        <el-breadcrumb-item>Chapter {{chapter}}</el-breadcrumb-item>
+      </el-breadcrumb>
+      <p>{{book.name_en}}</p>
+    </el-row>
     <el-row :gutter="6">
       <el-col :span="2" v-for="n in book.chapters" :key="book.abbr_en + '-' + n"><div class="grid-content ch-item"  @click="showVerses({version: version, book: bookId, chapter: n})"  :class="{active: isActive(n,chapter)}">{{n}}</div></el-col>
     </el-row>
@@ -23,6 +34,7 @@
       return {
         book: {
           name_cn: '',
+          name_en: '',
           abbr_en: '',
           chapters: 0,
         },
@@ -31,6 +43,7 @@
         chapter: 1,
         abbr_en: 'Gen',
         verses: [],
+        language: 'cn',
       };
     },
     created() {
@@ -39,7 +52,7 @@
       this.version = this.$route.params.version || 1;
       this.bookId = this.$route.params.book || 1;
       this.chapter = this.$route.params.chapter || 1;
-
+      this.language = this.$route.query.language || 'cn';
       this.book = this.$store.getters.book({
         version: this.version,
         book: this.bookId,

@@ -25,9 +25,10 @@
       };
     },
     created() {
-      this.$electron.ipcRenderer.send('get-books', this.$store.state.bible.location.version);
+      this.$electron.ipcRenderer.send('get-books', this.$route.params.version);
       this.$electron.ipcRenderer.on('get-books-reply', (event, items) => {
         this.books = items;
+        console.log(items);
         this.$store.commit('setbooks', items);
       });
     },

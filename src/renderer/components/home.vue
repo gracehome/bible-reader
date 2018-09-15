@@ -18,10 +18,17 @@
           </el-alert>
         </el-row>
         <el-row class="menu" :gutter="20" v-show="hasBible">
-          <router-link :to="{name: 'bibleIndex', params: {name_cn: '创'}}">
+          <router-link :to="{name: 'bibleIndex', params: {version: 1}, query: {language: 'cn'}}">
             <el-col :span="6" class="menu-item bg-blue">
               <el-card shadow="hover">
-                圣经阅读
+                和合本圣经
+              </el-card>
+            </el-col>
+          </router-link>
+          <router-link :to="{name: 'bibleIndex', params: {version: 2}, query: {language: 'en'}}">
+            <el-col :span="6" class="menu-item bg-blue">
+              <el-card shadow="hover">
+                钦定本KJV
               </el-card>
             </el-col>
           </router-link>
@@ -48,8 +55,8 @@
     created() {
       this.$electron.ipcRenderer.send('check-bible');
 
-      this.$electron.ipcRenderer.on('check-bible-reply', (event, exists) => {
-        if (!exists) {
+      this.$electron.ipcRenderer.on('check-bible-reply', (event, needUpdated) => {
+        if (needUpdated) {
           this.hasBible = false;
           this.loading = true;
           if (!navigator.onLine) {

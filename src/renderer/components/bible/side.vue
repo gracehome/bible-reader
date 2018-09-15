@@ -13,9 +13,13 @@
           <el-submenu v-for="book in books" :key="book.id" :index="'submenu-' + book.id">
             <template slot="title">
               <i class="el-icon-document"></i>
-              <span>{{book.name_cn}}</span>
+              <span v-if="language=='cn'">{{book.name_cn}}</span>
+              <span v-else>{{book.name_en}}</span>
             </template>            
-            <el-menu-item v-for="chapter in book.chapters" :index="book.id +'-item-' + chapter"  :key="book.id + '-item-' + chapter" :route="{name: 'reader', params: {book: book.id, chapter: chapter}}">{{chapter}}章</el-menu-item>
+            <el-menu-item v-for="chapter in book.chapters" :index="book.id +'-item-' + chapter"  :key="book.id + '-item-' + chapter" :route="{name: 'reader', params: {book: book.id, chapter: chapter}}">
+              <span v-if="language=='cn'">{{chapter}}章</span>
+              <span v-else>Chapter {{chapter}}</span>
+            </el-menu-item>
           </el-submenu>
         </el-menu>
       </el-col>
@@ -27,6 +31,14 @@
   export default {
     name: 'side',
     props: ['books'],
+    data() {
+      return {
+        language: 'cn',
+      };
+    },
+    created() {
+      this.language = this.$route.query.language || 'cn';
+    },
   };
 </script>
 

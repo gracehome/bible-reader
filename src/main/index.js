@@ -5,39 +5,70 @@ const { download } = require('electron-dl');
 const { Book, Verse } = require('../db');
 const fs = require('fs');
 const path = require('path');
-const config = require('../config');
 const crypto = require('crypto');
 
 const STORE_PATH = app.getPath('userData');
 
-const bible_url = 'https://raw.githubusercontent.com/gracehome/bible-reader/master/data/bible.sqlite';
+const files = [
+  { url: 'https://raw.githubusercontent.com/gracehome/bible-reader/master/data/md5.txt' },
+  { url: 'https://raw.githubusercontent.com/gracehome/bible-reader/master/data/bible.sqlite' },
+];
+const bible_path = path.join(STORE_PATH, 'bible.sqlite');
+const md5_path = path.join(STORE_PATH, 'md5.txt');
 
 // 判断下载文件的完整性
-function compareHash(cb) {
-  let hash;
+async function compareHash() {
+  if (!fs.existsSync(bible_path) || !fs.existsSync(md5_path)) {
+    return Promise.resolve(false);
+  }
   const md5sum = crypto.createHash('md5');
-  const stream = fs.createReadStream(path.join(STORE_PATH, 'bible.sqlite'));
+  const stream = fs.createReadStream(bible_path);
+  const md5 = fs.readFileSync(md5_path, 'utf-8').trim();
+
   stream.on('data', (chunk) => {
     md5sum.update(chunk);
   });
-  stream.on('end', () => {
-    hash = md5sum.digest('hex').toUpperCase();
-    cb(hash === config.hash);
-  });
 
-  stream.on('error', () => {
-    cb(false);
+  return new Promise((resolve, reject) => {
+    stream.on('end', () => {
+      const hash = md5sum.digest('hex').toUpperCase();
+      resolve(hash === md5);
+    });
+    stream.on('error', () => {
+      reject(false);
+    });
   });
 }
 
-function downloadBible() {
-  if (!fs.existsSync(path.join(STORE_PATH, 'bible.sqlite'))) {
-    return download(BrowserWindow.getFocusedWindow(), bible_url, {
-      directory: STORE_PATH,
-      filename: 'bible.sqlite',
-    });
+async function updateBible() {
+  [bible_path, md5_path].forEach((file) => {
+    if (fs.existsSync(file)) {
+      fs.unlinkSync(file);
+    }
+  });
+
+  return download(BrowserWindow.getFocusedWindow(), files[0].url, {
+    saveAs: false,
+    directory: STORE_PATH,
+  }).then(() => download(BrowserWindow.getFocusedWindow(), files[1].url, {
+    saveAs: false,
+    directory: STORE_PATH,
+  }));
+}
+
+async function needUpdate() {
+  let needUpdated = false;
+
+  [bible_path, md5_path].forEach((file) => {
+    if (!fs.existsSync(file)) {
+      needUpdated = true;
+    }
+  });
+  const sameHash = await compareHash();
+  if (!needUpdated && !sameHash) {
+    needUpdated = true;
   }
-  return Promise.resolve(true);
+  return needUpdated;
 }
 
 /**
@@ -137,34 +168,16 @@ ipcMain.on('relaunch', () => {
   app.exit(0);
 });
 
-// 检查是否有数据文件，以及验证数据文件完整性
-ipcMain.on('check-bible', (event) => {
-  const exists = fs.existsSync(path.join(STORE_PATH, 'bible.sqlite'));
-  if (exists) {
-    compareHash((completed) => {
-      if (!completed) {
-        fs.unlinkSync(path.join(STORE_PATH, 'bible.sqlite'));
-        event.sender.send('check-bible-reply', false);
-        return;
-      }
-      event.sender.send('check-bible-reply', true);
-    });
-    return;
-  }
-  event.sender.send('check-bible-reply', false);
+ipcMain.on('check-bible', async (event) => {
+  const needUpdated = await needUpdate();
+  return event.sender.send('check-bible-reply', needUpdated);
 });
 
 // 下载圣经
-ipcMain.on('download-bible', (event) => {
-  downloadBible().then(() => {
-    compareHash((completed) => {
-      if (!completed) {
-        fs.unlinkSync(path.join(STORE_PATH, 'bible.sqlite'));
-      }
-      event.sender.send('download-bible-reply', completed);
-    });
-  }).catch(() => {
-    event.sender.send('download-bible-reply', false);
+ipcMain.on('download-bible', async (event) => {
+  await updateBible().then(async () => {
+    const sameHash = await compareHash();
+    event.sender.send('download-bible-reply', sameHash);
   });
 });
 

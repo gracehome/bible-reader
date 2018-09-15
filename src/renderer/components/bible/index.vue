@@ -1,21 +1,25 @@
 <template>
   <div class="bible-index">
-    <p>旧约</p>
+    <p v-if="language=='cn'">旧约</p>
+    <p v-else>Old Testament</p>
     <el-row :gutter="10">
       <el-col :span="4" v-for="(book, index) in oldBooks" :key="'old-' + index" class="book-item">
-        <router-link :to="{name: 'reader', params: {version: book.version, book: book.id, chapter: 1}}">
+        <router-link :to="{name: 'reader', params: {version: book.version, book: book.id, chapter: 1}, query: {language: language}}">
           <el-card shadow="hover" class="book-body">
-            <small class="name">{{book.name_cn}}</small>
+            <small class="name" v-if="language=='cn'">{{book.name_cn}}</small>
+            <small class="name" v-else>{{book.name_en}}</small>
           </el-card>
         </router-link>
       </el-col>
     </el-row>
     <el-row :gutter="10">
-      <h4>新约</h4>
+      <p v-if="language=='cn'">旧约</p>
+      <p v-else>New Testament</p>
       <el-col :span="4" v-for="(book, index) in newBooks" :key="'new-' + index" class="book-item">
-        <router-link :to="{name: 'reader', params: {version: book.version, book: book.id, chapter: 1}}">
+        <router-link :to="{name: 'reader', params: {version: book.version, book: book.id, chapter: 1}, query: {language: language}}">
           <el-card shadow="hover" class="book-body">
-            <small class="name">{{book.name_cn}}</small>
+            <small class="name" v-if="language=='cn'">{{book.name_cn}}</small>
+            <small class="name" v-else>{{book.name_en}}</small>
           </el-card>
         </router-link>
       </el-col>
@@ -30,9 +34,11 @@
       return {
         oldBooks: [],
         newBooks: [],
+        language: 'cn',
       };
     },
     created() {
+      this.language = this.$route.query.language || 'cn';
       this.oldBooks = this.getOldBooks;
       this.newBooks = this.getNewBooks;
     },
@@ -42,8 +48,12 @@
       },
     },
     computed: {
-      getOldBooks() { return this.getOldNew('old'); },
-      getNewBooks() { return this.getOldNew('new'); },
+      getOldBooks() {
+        return this.getOldNew('old');
+      },
+      getNewBooks() {
+        return this.getOldNew('new');
+      },
     },
     watch: {
       getOldBooks(oldBooks) {

@@ -28,7 +28,7 @@ export default new Router({
       component: Bible,
       redirect: { name: 'bibleIndex' },
       children: [{
-        path: '/bible/index',
+        path: '/bible/versions/:version',
         name: 'bibleIndex',
         component: BibleIndex,
       },
