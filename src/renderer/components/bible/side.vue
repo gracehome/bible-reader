@@ -10,13 +10,13 @@
     <el-row>
       <el-col :span="24">
         <el-menu class="el-menu-vertical-demo" :router="true">
-          <el-submenu v-for="book in books" :key="book.id" :index="'submenu-' + book.id">
+          <el-submenu v-for="scripture in scriptures" :key="scripture.id" :index="'submenu-' + scripture.id">
             <template slot="title">
               <i class="el-icon-document"></i>
-              <span v-if="language=='cn'">{{book.name_cn}}</span>
-              <span v-else>{{book.name_en}}</span>
+              <span v-if="language=='cn'">{{scripture.name_cn}}</span>
+              <span v-else>{{scripture.name_en}}</span>
             </template>            
-            <el-menu-item v-for="chapter in book.chapters" :index="book.id +'-item-' + chapter"  :key="book.id + '-item-' + chapter" :route="{name: 'reader', params: {book: book.id, chapter: chapter}}">
+            <el-menu-item v-for="chapter in scripture.chapters" :index="scripture.id +'-item-' + chapter"  :key="scripture.id + '-item-' + chapter" :route="{name: 'reader', params: {scripture: scripture.id, chapter: chapter}}">
               <span v-if="language=='cn'">{{chapter}}章</span>
               <span v-else>Chapter {{chapter}}</span>
             </el-menu-item>
@@ -30,7 +30,7 @@
 <script>
   export default {
     name: 'side',
-    props: ['books'],
+    props: ['scriptures'],
     data() {
       return {
         language: 'cn',

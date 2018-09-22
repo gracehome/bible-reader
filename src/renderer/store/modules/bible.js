@@ -1,27 +1,27 @@
 const state = {
   location: {
     version: 1,
-    book: 1,
+    scripture: 1,
     chapter: 1,
     verse: 1,
   },
-  books: [],
-  book: {},
+  scriptures: [],
+  scripture: {},
 };
 
 const getters = {
-  book: state => (arg) => {
-    const bookId = parseInt(arg.book, 10) || 1;
+  scripture: state => (arg) => {
+    const scriptureId = parseInt(arg.scripture, 10) || 1;
     const version = parseInt(arg.version, 10) || 1;
-    return state.books.find(book => book.version === version && book.id === bookId);
+    return state.scriptures.find(sp => sp.version === version && sp.id === scriptureId);
   },
-  books: () => state.books,
-  oldnew: state => oldnew => state.books.filter(book => book.oldnew === oldnew),
+  scriptures: () => state.scriptures,
+  oldnew: state => oldnew => state.scriptures.filter(scripture => scripture.oldnew === oldnew),
 };
 
 const mutations = {
-  setbooks(state, books) {
-    state.books = books || [];
+  setscriptures(state, scriptures) {
+    state.scriptures = scriptures || [];
   },
 };
 

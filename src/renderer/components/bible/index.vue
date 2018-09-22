@@ -3,11 +3,11 @@
     <p v-if="language=='cn'">旧约</p>
     <p v-else>Old Testament</p>
     <el-row :gutter="10">
-      <el-col :span="4" v-for="(book, index) in oldBooks" :key="'old-' + index" class="book-item">
-        <router-link :to="{name: 'reader', params: {version: book.version, book: book.id, chapter: 1}, query: {language: language}}">
-          <el-card shadow="hover" class="book-body">
-            <small class="name" v-if="language=='cn'">{{book.name_cn}}</small>
-            <small class="name" v-else>{{book.name_en}}</small>
+      <el-col :span="4" v-for="(scripture, index) in oldBooks" :key="'old-' + index" class="scripture-item">
+        <router-link :to="{name: 'reader', params: {version: scripture.version, scripture: scripture.id, chapter: 1}, query: {language: language}}">
+          <el-card shadow="hover" class="scripture-body">
+            <small class="name" v-if="language=='cn'">{{scripture.name_cn}}</small>
+            <small class="name" v-else>{{scripture.name_en}}</small>
           </el-card>
         </router-link>
       </el-col>
@@ -15,11 +15,11 @@
     <el-row :gutter="10">
       <p v-if="language=='cn'">旧约</p>
       <p v-else>New Testament</p>
-      <el-col :span="4" v-for="(book, index) in newBooks" :key="'new-' + index" class="book-item">
-        <router-link :to="{name: 'reader', params: {version: book.version, book: book.id, chapter: 1}, query: {language: language}}">
-          <el-card shadow="hover" class="book-body">
-            <small class="name" v-if="language=='cn'">{{book.name_cn}}</small>
-            <small class="name" v-else>{{book.name_en}}</small>
+      <el-col :span="4" v-for="(scripture, index) in newBooks" :key="'new-' + index" class="scripture-item">
+        <router-link :to="{name: 'reader', params: {version: scripture.version, scripture: scripture.id, chapter: 1}, query: {language: language}}">
+          <el-card shadow="hover" class="scripture-body">
+            <small class="name" v-if="language=='cn'">{{scripture.name_cn}}</small>
+            <small class="name" v-else>{{scripture.name_en}}</small>
           </el-card>
         </router-link>
       </el-col>
@@ -71,16 +71,16 @@
     text-align: center;
   }
 
-  .book-item {
+  .scripture-item {
     padding-top: 5px;
     text-align: center;
   }
 
-  .book-body {
+  .scripture-body {
     cursor: pointer;
   }
 
-  .book-body:hover {
+  .scripture-body:hover {
     border: solid green 1px;
   }
 </style>

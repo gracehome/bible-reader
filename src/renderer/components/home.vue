@@ -34,7 +34,7 @@
           </router-link>
           <el-col :span="6" class="menu-item">
             <el-card shadow="hover">
-              笔记收藏
+              西敏小要理问答
             </el-card>
           </el-col>
         </el-row>

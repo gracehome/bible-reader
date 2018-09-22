@@ -2,7 +2,7 @@ import { app, ipcMain, BrowserWindow , remote, dialog, screen, Tray, Menu} from 
 
 const { download } = require('electron-dl');
 
-const { Book, Verse } = require('../db');
+const { Scripture, Verse } = require('../db');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -71,10 +71,6 @@ async function needUpdate() {
   return needUpdated;
 }
 
-/**
- * Set `__static` path to static files in production
- * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
- */
 if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\') // eslint-disable-line
 }
@@ -182,11 +178,11 @@ ipcMain.on('download-bible', async (event) => {
 });
 
 // 获取圣经目录
-ipcMain.on('get-books', (event, version) => {
-  Book.findAll({ where: { version }, raw: true }).then((books) => {
-    event.sender.send('get-books-reply', books);
+ipcMain.on('get-sciptures', (event, version) => {
+  Scripture.findAll({ where: { version }, raw: true }).then((s) => {
+    event.sender.send('get-sciptures-reply', s);
   }).catch(() => {
-    event.sender.send('get-books-reply', []);
+    event.sender.send('get-sciptures-reply', []);
   });
 });
 

@@ -37,7 +37,7 @@ const Version = sequelize.define('versions', {
   version: { type: Sequelize.STRING },
 });
 
-const Book = sequelize.define('books', {
+const Scripture = sequelize.define('scriptures', {
   name_cn: { type: Sequelize.STRING },
   name_en: { type: Sequelize.STRING },
   abbr_cn: { type: Sequelize.STRING },
@@ -46,12 +46,13 @@ const Book = sequelize.define('books', {
   category_name: { type: Sequelize.STRING },
   oldnew: { type: Sequelize.STRING },
   chapters: { type: Sequelize.INTEGER },
+  order: { type: Sequelize.INTEGER },
 });
 
 const Verse = sequelize.define('verses', {
   content: { type: Sequelize.STRING },
-  book_cn: { type: Sequelize.STRING },
-  book_en: { type: Sequelize.STRING },
+  scripture_cn: { type: Sequelize.STRING },
+  scripture_en: { type: Sequelize.STRING },
   category: { type: Sequelize.INTEGER },
   category_name: { type: Sequelize.STRING },
   oldnew: { type: Sequelize.STRING },
@@ -61,7 +62,7 @@ const Verse = sequelize.define('verses', {
 });
 
 
-Book.belongsTo(Version, {
+Scripture.belongsTo(Version, {
   as: 'Version',
   foreignKey: {
     name: 'version',
@@ -70,18 +71,18 @@ Book.belongsTo(Version, {
   allowNull: false,
 });
 
-Verse.belongsTo(Book, {
-  as: 'Book',
+Verse.belongsTo(Scripture, {
+  as: 'Scripture',
   foreignKey: {
-    name: 'book',
-    as: 'Book',
+    name: 'scripture',
+    as: 'Scripture',
   },
   allowNull: false,
 });
 
 db.Version = Version;
-db.Book = Book;
+db.Scripture = Scripture;
 db.Verse = Verse;
 
-export { Version, Book, Verse };
+export { Version, Scripture, Verse };
 

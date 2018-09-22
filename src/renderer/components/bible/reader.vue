@@ -4,22 +4,22 @@
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ name: 'home' }">首页</el-breadcrumb-item>
         <el-breadcrumb-item :to="{ name: 'bibleIndex' , params: {version: 1}, query: {language: language}}">目录</el-breadcrumb-item>
-        <el-breadcrumb-item>{{book.name_cn}}</el-breadcrumb-item>
+        <el-breadcrumb-item>{{scripture.name_cn}}</el-breadcrumb-item>
         <el-breadcrumb-item>第{{chapter}}章</el-breadcrumb-item>
       </el-breadcrumb>
-      <p>{{book.name_cn}}</p>
+      <p>{{scripture.name_cn}}</p>
     </el-row>
     <el-row v-else>
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ name: 'home' }">Home</el-breadcrumb-item>
         <el-breadcrumb-item :to="{ name: 'bibleIndex', params: {version: 2}, query: {language: language} }">Index</el-breadcrumb-item>
-        <el-breadcrumb-item>{{book.name_en}}</el-breadcrumb-item>
+        <el-breadcrumb-item>{{scripture.name_en}}</el-breadcrumb-item>
         <el-breadcrumb-item>Chapter {{chapter}}</el-breadcrumb-item>
       </el-breadcrumb>
-      <p>{{book.name_en}}</p>
+      <p>{{scripture.name_en}}</p>
     </el-row>
     <el-row :gutter="6">
-      <el-col :span="2" v-for="n in book.chapters" :key="book.abbr_en + '-' + n"><div class="grid-content ch-item"  @click="showVerses({version: version, book: bookId, chapter: n})"  :class="{active: isActive(n,chapter)}">{{n}}</div></el-col>
+      <el-col :span="2" v-for="n in scripture.chapters" :key="scripture.abbr_en + '-' + n"><div class="grid-content ch-item"  @click="showVerses({version: version, scripture: scriptureId, chapter: n})"  :class="{active: isActive(n,chapter)}">{{n}}</div></el-col>
     </el-row>
     <el-row>
       <p v-for="(verse,index) in verses" :key="'verse-' + index">{{verse.verse}}  {{verse.content}}</p>
@@ -32,14 +32,14 @@
     name: 'bibleReader',
     data() {
       return {
-        book: {
+        scripture: {
           name_cn: '',
           name_en: '',
           abbr_en: '',
           chapters: 0,
         },
         version: 1,
-        bookId: 1,
+        scriptureId: 1,
         chapter: 1,
         abbr_en: 'Gen',
         verses: [],
@@ -50,17 +50,17 @@
       this.chapter = this.$route.query.chapter || 1;
       this.abbr_en = this.$route.params.abbr_en || 'Gen';
       this.version = this.$route.params.version || 1;
-      this.bookId = this.$route.params.book || 1;
+      this.scriptureId = this.$route.params.scripture || 1;
       this.chapter = this.$route.params.chapter || 1;
       this.language = this.$route.query.language || 'cn';
-      this.book = this.$store.getters.book({
+      this.scripture = this.$store.getters.scripture({
         version: this.version,
-        book: this.bookId,
+        scripture: this.scriptureId,
       });
 
       this.getVerses({
         version: this.version,
-        book: this.bookId,
+        scripture: this.scriptureId,
         chapter: this.chapter,
       });
 
@@ -88,10 +88,10 @@
       if (to.fullPath !== from.fullPath) {
         this.getVerses(to.params);
       }
-      if (to.params.book !== from.params.book) {
-        this.book = this.$store.getters.book({
+      if (to.params.scripture !== from.params.scripture) {
+        this.scripture = this.$store.getters.scripture({
           version: to.params.version,
-          book: to.params.book,
+          scripture: to.params.scripture,
         });
       }
       next();

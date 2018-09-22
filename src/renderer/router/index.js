@@ -33,7 +33,7 @@ export default new Router({
         component: BibleIndex,
       },
       {
-        path: '/bible/versions/:version/books/:book/chapters/:chapter',
+        path: '/bible/versions/:version/scriptures/:scripture/chapters/:chapter',
         name: 'reader',
         component: BibleReader,
       }],
