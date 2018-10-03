@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 
 const STORE_PATH = app.getPath('userData');
-const db = {};
 
 if (!fs.existsSync(STORE_PATH)) { // 如果不存在路径
   fs.mkdirSync(STORE_PATH); // 就创建
@@ -62,6 +61,30 @@ const Verse = sequelize.define('verses', {
 });
 
 
+const Book = sequelize.define('books', {
+  name: { type: Sequelize.STRING },
+  sub_name: { type: Sequelize.STRING },
+  author: { type: Sequelize.STRING },
+  publish_date: { type: Sequelize.DATE },
+  publisher: { type: Sequelize.STRING },
+  resource: { type: Sequelize.STRING },
+  resource_url: { type: Sequelize.TEXT },
+  picture: { type: Sequelize.TEXT },
+  description: { type: Sequelize.TEXT },
+});
+
+const Chapter = sequelize.define('chapters', {
+  title: { type: Sequelize.STRING },
+  sub_title: { type: Sequelize.STRING },
+  order: { type: Sequelize.INTEGER },
+  description: { type: Sequelize.TEXT },
+});
+
+const Paper = sequelize.define('papers', {
+  state: { type: Sequelize.INTEGER, defaultValue: 10 }, // 10-publish 20-draft
+  content: { type: Sequelize.TEXT },
+});
+
 Scripture.belongsTo(Version, {
   as: 'Version',
   foreignKey: {
@@ -80,9 +103,32 @@ Verse.belongsTo(Scripture, {
   allowNull: false,
 });
 
-db.Version = Version;
-db.Scripture = Scripture;
-db.Verse = Verse;
+Chapter.belongsTo(Book, {
+  as: 'Chapter',
+  foreignKey: {
+    name: 'book',
+    as: 'Book',
+  },
+  allowNull: false,
+});
 
-export { Version, Scripture, Verse };
+Paper.belongsTo(Book, {
+  as: 'PaperBook',
+  foreignKey: {
+    name: 'book',
+    as: 'Book',
+  },
+  allowNull: false,
+});
+
+Paper.belongsTo(Chapter, {
+  as: 'PaperChapter',
+  foreignKey: {
+    name: 'chapter',
+    as: 'Chapter',
+  },
+  allowNull: false,
+});
+
+export { Version, Scripture, Verse, Book, Chapter, Paper };
 

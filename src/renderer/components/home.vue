@@ -1,6 +1,6 @@
 <template>
   <div id="home">
-    <el-container class="container"  v-loading="loading"  element-loading-text="正在下载圣经数据">
+    <el-container class="container" v-loading="loading" element-loading-text="正在下载圣经数据">
       <el-aside width="200px" class="side">
         <el-row>
           <el-col :span="24" class="logo">
@@ -32,11 +32,15 @@
               </el-card>
             </el-col>
           </router-link>
-          <el-col :span="6" class="menu-item">
-            <el-card shadow="hover">
-              西敏小要理问答
-            </el-card>
-          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <router-link  v-for="(book, index) in books" :key="'book-' + index" :to="{name: 'book', params: {id: book.id}}">
+            <el-col :span="6" class="menu-item">
+              <el-card shadow="hover">
+                {{book.name}}
+              </el-card>
+            </el-col>
+          </router-link>
         </el-row>
       </el-main>
     </el-container>
@@ -50,10 +54,12 @@
         scripture: '不从恶人的计谋、不站罪人的道路、不坐亵慢人的座位、惟喜爱耶和华的律法、昼夜思想、这人便为有福。 --诗篇1:1-2',
         loading: true,
         hasBible: true,
+        books: [],
       };
     },
     created() {
       this.$electron.ipcRenderer.send('check-bible');
+      this.$electron.ipcRenderer.send('get-books');
 
       this.$electron.ipcRenderer.on('check-bible-reply', (event, needUpdated) => {
         if (needUpdated) {
@@ -83,13 +89,19 @@
         this.hasBible = true;
         this.notify('下载数据成功', '请浏览您的圣经');
       });
+
+      this.$electron.ipcRenderer.on('get-books-reply', (event, books) => {
+        this.books = books || [];
+      });
     },
     methods: {
       notify(title, message) {
         const h = this.$createElement;
         this.$notify({
           title,
-          message: h('i', { style: 'color: teal' }, message),
+          message: h('i', {
+            style: 'color: teal',
+          }, message),
         });
       },
     },
@@ -123,5 +135,6 @@
   .menu-item {
     text-align: center;
     font-size: 1.2rem;
+    padding-top: 10px;
   }
 </style>

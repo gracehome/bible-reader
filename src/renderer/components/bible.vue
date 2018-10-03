@@ -2,7 +2,7 @@
   <div id="bible">
     <el-container class="container">
       <el-aside width="200px" class="side">
-        <Side :books="books"></Side>
+        <Side :scriptures="scriptures"></Side>
       </el-aside>
       <el-main>
         <router-view></router-view>
@@ -21,15 +21,14 @@
     },
     data() {
       return {
-        books: [],
+        scriptures: [],
       };
     },
     created() {
-      this.$electron.ipcRenderer.send('get-books', this.$route.params.version);
-      this.$electron.ipcRenderer.on('get-books-reply', (event, items) => {
-        this.books = items;
-        console.log(items);
-        this.$store.commit('setbooks', items);
+      this.$electron.ipcRenderer.send('get-scriptures', this.$route.params.version);
+      this.$electron.ipcRenderer.on('get-scriptures-reply', (event, items) => {
+        this.scriptures = items;
+        this.$store.commit('setscriptures', items);
       });
     },
   };

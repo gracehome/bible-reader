@@ -2,7 +2,7 @@ import { app, ipcMain, BrowserWindow , remote, dialog, screen, Tray, Menu} from 
 
 const { download } = require('electron-dl');
 
-const { Scripture, Verse } = require('../db');
+const { Scripture, Verse, Book, Chapter, Paper } = require('../db');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -178,11 +178,11 @@ ipcMain.on('download-bible', async (event) => {
 });
 
 // 获取圣经目录
-ipcMain.on('get-sciptures', (event, version) => {
+ipcMain.on('get-scriptures', (event, version) => {
   Scripture.findAll({ where: { version }, raw: true }).then((s) => {
-    event.sender.send('get-sciptures-reply', s);
+    event.sender.send('get-scriptures-reply', s);
   }).catch(() => {
-    event.sender.send('get-sciptures-reply', []);
+    event.sender.send('get-scriptures-reply', []);
   });
 });
 
@@ -190,4 +190,28 @@ ipcMain.on('chapter-read', (event, arg) => {
   Verse.findAll({ where: arg, raw: true }).then((verses) => {
     event.sender.send('chapter-read-reply', verses);
   }).catch(() => event.sender.send('chapter-read-reply', []));
+});
+
+ipcMain.on('get-books', (event) => {
+  Book.findAll({ raw: true }).then((books) => {
+    event.sender.send('get-books-reply', books);
+  }).catch(() => event.sender.send('get-books-reply', []));
+});
+
+ipcMain.on('get-book', (event, id) => {
+  Book.findOne({ raw: true, where: { id } }).then((book) => {
+    event.sender.send('get-book-reply', book);
+  }).catch(() => event.sender.send('get-book-reply', {}));
+});
+
+ipcMain.on('get-chapters', (event, book) => {
+  Chapter.findAll({ where: { book }, raw: true, order: [['order', 'asc']] }).then((chapters) => {
+    event.sender.send('get-chapters-reply', chapters);
+  }).catch(() => event.sender.send('get-chapters-reply', []));
+});
+
+ipcMain.on('get-paper', (event, arg) => {
+  Paper.findOne({ raw: true, where: arg }).then((paper) => {
+    event.sender.send('get-paper-reply', paper);
+  }).catch(() => event.sender.send('get-paper-reply', {}));
 });

@@ -6,6 +6,7 @@ import Home from '@/components/home.vue';
 import Bible from '@/components/bible.vue';
 import BibleIndex from '@/components/bible/index.vue';
 import BibleReader from '@/components/bible/reader.vue';
+import BookReader from '@/components/book/reader.vue';
 
 Vue.use(Router);
 
@@ -37,6 +38,11 @@ export default new Router({
         name: 'reader',
         component: BibleReader,
       }],
+    },
+    {
+      path: '/books/:id',
+      name: 'book',
+      component: BookReader,
     },
     {
       path: '*',
